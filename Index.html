@@ -1,0 +1,2726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Program Specialist House Bubbles &amp; Priority Triage</title>
+  <style>
+    /* =========================================================================
+       DESIGN TOKENS & SEASONAL THEME VARIABLES (Feminine Purple + Calming Green)
+       ========================================================================= */
+    :root {
+      --bg-page: #fbf8ff;
+      --bg-card: #ffffff;
+      --bg-subtle: #f4eeff;
+      --bg-sage: #edf8f2;
+      --border-soft: #e6d8fb;
+      --border-sage: #c3e8d4;
+      --text-main: #2a1647;
+      --text-muted: #654f85;
+      --accent-plum: #7c3aed;
+      --accent-plum-dark: #5b21b6;
+      --accent-plum-soft: #ede3ff;
+      --accent-sage: #1d7a4f;
+      --accent-sage-soft: #dcfce7;
+      --danger-bg: #fff1f2;
+      --danger-border: #fecdd3;
+      --danger-text: #be123c;
+      --warn-bg: #fffbeb;
+      --warn-border: #fde68a;
+      --warn-text: #b45309;
+      --prep-bg: #f5f3ff;
+      --prep-border: #ddd6fe;
+      --prep-text: #6d28d9;
+      --splash-grad: linear-gradient(145deg, #f3e8ff 0%, #fcfaff 52%, #dcfce7 100%);
+      --orb-1: #e9d5ff;
+      --orb-2: #a7f3d0;
+      --shadow-card: 0 4px 18px rgba(76, 29, 149, 0.06);
+      --shadow-float: 0 10px 26px rgba(109, 40, 217, 0.28);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-pill: 999px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-serif: Georgia, "Times New Roman", serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      max-width: 100%;
+      overflow-x: hidden;
+      background: var(--bg-page);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.45;
+    }
+
+    /* =========================================================================
+       FULL-SCREEN WELCOME SPLASH OVERLAY
+       ========================================================================= */
+    #welcomeSplashOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--splash-grad);
+      transition: opacity 0.45s ease, visibility 0.45s ease;
+      cursor: pointer;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    #welcomeSplashOverlay.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(44px);
+      opacity: 0.55;
+      pointer-events: none;
+      animation: floatOrb 6s ease-in-out infinite;
+    }
+
+    .splash-orb.top {
+      width: 280px;
+      height: 280px;
+      top: -60px;
+      left: -60px;
+      background: var(--orb-1);
+    }
+
+    .splash-orb.bottom {
+      width: 320px;
+      height: 320px;
+      bottom: -80px;
+      right: -60px;
+      background: var(--orb-2);
+      animation-delay: 1.4s;
+    }
+
+    @keyframes floatOrb {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-12px) scale(1.04); }
+    }
+
+    .splash-card {
+      position: relative;
+      z-index: 2;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      padding: 24px 16px;
+    }
+
+    .splash-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--border-soft);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 16px;
+    }
+
+    .dot-sage {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-sage);
+      display: inline-block;
+    }
+
+    #splashTimeGreeting {
+      margin: 0 0 6px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-sage);
+      letter-spacing: 0.01em;
+    }
+
+    .splash-title {
+      margin: 0 0 12px;
+      font-family: var(--font-serif);
+      font-size: clamp(36px, 8vw, 50px);
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.12;
+    }
+
+    .splash-sub {
+      margin: 0 auto 24px;
+      max-width: 340px;
+      font-size: 15px;
+      color: var(--text-muted);
+    }
+
+    .btn-primary-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 50px;
+      padding: 12px 28px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: var(--accent-plum);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .btn-primary-pill:active {
+      transform: scale(0.98);
+    }
+
+    /* =========================================================================
+       STICKY HEADER & TOOLBAR
+       ========================================================================= */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(251, 248, 255, 0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 14px 16px;
+    }
+
+    .header-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: clamp(20px, 4vw, 25px);
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .brand-sub {
+      margin: 2px 0 0;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+
+    .header-actions::-webkit-scrollbar {
+      display: none;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 44px;
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.15s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-plum {
+      background: var(--accent-plum);
+      border-color: var(--accent-plum);
+      color: #ffffff;
+    }
+
+    .btn-sage {
+      background: var(--bg-sage);
+      border-color: var(--border-sage);
+      color: var(--accent-sage);
+    }
+
+    .btn-soft-plum {
+      background: var(--bg-subtle);
+      border-color: var(--border-soft);
+      color: var(--accent-plum-dark);
+    }
+
+    .btn-danger-soft {
+      background: var(--danger-bg);
+      border-color: var(--danger-border);
+      color: var(--danger-text);
+    }
+
+    .swatch-dot-mini {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(42, 22, 71, 0.25);
+      display: inline-block;
+    }
+
+    /* =========================================================================
+       NON-BLOCKING TOAST NOTIFICATION BANNER
+       ========================================================================= */
+    #toastBanner {
+      display: none;
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-sage);
+      border: 1px solid var(--border-sage);
+      color: var(--accent-sage);
+      font-size: 13px;
+      font-weight: 700;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      box-shadow: var(--shadow-card);
+    }
+
+    #toastBanner.is-visible {
+      display: flex;
+    }
+
+    #toastBanner.is-warn {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+      color: var(--warn-text);
+    }
+
+    .toast-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      shrink: 0;
+    }
+
+    .btn-mini {
+      min-height: 36px;
+      padding: 5px 11px;
+      border-radius: 10px;
+      border: 1px solid currentColor;
+      background: rgba(255, 255, 255, 0.75);
+      color: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* =========================================================================
+       TODAY'S FOCUS (TOP 3) PRIORITY STRIP
+       ========================================================================= */
+    .priority-strip {
+      background: linear-gradient(135deg, #ffffff 0%, #f7f2ff 60%, #effaf4 100%);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 16px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .strip-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      min-height: 44px;
+    }
+
+    .strip-title-wrap {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .strip-title {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .badge-count {
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--accent-plum-soft);
+      color: var(--accent-plum-dark);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .strip-body {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));
+      gap: 10px;
+    }
+
+    .strip-body.is-collapsed {
+      display: none;
+    }
+
+    .priority-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 13px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      transition: background 0.25s ease, transform 0.15s ease;
+    }
+
+    .priority-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .urgency-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .urgency-overdue {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: var(--danger-text);
+      animation: softPulse 2s infinite;
+    }
+
+    .urgency-soon {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      color: var(--warn-text);
+    }
+
+    .urgency-prep {
+      background: var(--prep-bg);
+      border: 1px solid var(--prep-border);
+      color: var(--prep-text);
+    }
+
+    .urgency-calm {
+      background: var(--bg-sage);
+      border: 1px solid var(--border-sage);
+      color: var(--accent-sage);
+    }
+
+    @keyframes softPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(190, 18, 60, 0.18); }
+      50% { box-shadow: 0 0 0 5px rgba(190, 18, 60, 0); }
+    }
+
+    .house-tag {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-subtle);
+      color: var(--accent-plum-dark);
+    }
+
+    .priority-item-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .priority-item-title:hover {
+      text-decoration: underline;
+    }
+
+    .priority-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .priority-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* =========================================================================
+       REGION SECTIONS & 12 HOUSE BUBBLES GRID
+       ========================================================================= */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .pill-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .region-section {
+      margin-bottom: 26px;
+    }
+
+    .region-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 2px;
+    }
+
+    .region-title {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 19px;
+      font-weight: 700;
+    }
+
+    .bubbles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
+      gap: 14px;
+    }
+
+    .house-bubble {
+      position: relative;
+      text-align: left;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-soft);
+      border-radius: 26px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 152px;
+      cursor: pointer;
+      transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .house-bubble:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-plum);
+      box-shadow: 0 10px 24px rgba(124, 58, 237, 0.11);
+    }
+
+    .house-bubble:active {
+      transform: scale(0.99);
+    }
+
+    .house-bubble.region-kutztown {
+      border-color: var(--border-sage);
+    }
+
+    .house-bubble.region-kutztown:hover {
+      border-color: var(--accent-sage);
+    }
+
+    .bubble-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .bubble-name-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .bubble-name {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .alert-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #e11d48;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 3px #ffe4e6;
+    }
+
+    .alert-dot.amber {
+      background: #d97706;
+      box-shadow: 0 0 0 3px #fef3c7;
+    }
+
+    .bubble-sub {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .bubble-open-badge {
+      padding: 5px 11px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 800;
+      background: var(--bg-subtle);
+      color: var(--accent-plum-dark);
+      border: 1px solid var(--border-soft);
+      flex-shrink: 0;
+    }
+
+    .region-kutztown .bubble-open-badge {
+      background: var(--bg-sage);
+      color: var(--accent-sage);
+      border-color: var(--border-sage);
+    }
+
+    .bubble-next-box {
+      width: 100%;
+      border-radius: 16px;
+      background: var(--bg-page);
+      border: 1px solid var(--border-soft);
+      padding: 10px 12px;
+    }
+
+    .bubble-next-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--accent-plum-dark);
+      margin-bottom: 2px;
+    }
+
+    .bubble-next-title {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* =========================================================================
+       FLOATING QUICK-ADD (+) BUTTON (Safe-Area Inset Aware)
+       ========================================================================= */
+    .fab-quick-add {
+      position: fixed;
+      right: 18px;
+      bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+      z-index: 60;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, var(--accent-plum) 0%, var(--accent-plum-dark) 100%);
+      color: #ffffff;
+      font-size: 30px;
+      font-weight: 500;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-float);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .fab-quick-add:active {
+      transform: scale(0.94);
+    }
+
+    /* =========================================================================
+       MODALS & HOUSE DRILL-DOWN DRAWER
+       ========================================================================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(34, 15, 63, 0.48);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .modal-backdrop.is-open {
+      display: flex;
+    }
+
+    @media (min-width: 640px) {
+      .modal-backdrop {
+        align-items: center;
+        padding: 18px;
+      }
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 720px;
+      max-height: 92vh;
+      background: var(--bg-page);
+      border: 1px solid var(--border-soft);
+      border-radius: 28px 28px 0 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(28, 12, 54, 0.28);
+    }
+
+    @media (min-width: 640px) {
+      .modal-sheet {
+        border-radius: 28px;
+      }
+    }
+
+    .modal-sheet.narrow {
+      max-width: 520px;
+    }
+
+    .modal-header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-soft);
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .modal-title {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 18px 20px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 540px) {
+      .form-grid.two-col {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .field-label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 13px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .textarea {
+      min-height: 110px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12.5px;
+    }
+
+    .input:focus, .select:focus, .textarea:focus {
+      outline: 2px solid var(--accent-plum);
+      outline-offset: 1px;
+    }
+
+    .inline-name-input {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+      background: transparent;
+      border: none;
+      border-bottom: 2px dashed var(--border-soft);
+      padding: 2px 4px;
+      width: 100%;
+      max-width: 260px;
+    }
+
+    .inline-name-input:focus {
+      outline: none;
+      border-bottom-color: var(--accent-plum);
+    }
+
+    /* Task Cards inside House Drawer */
+    .task-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: 22px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 2px 10px rgba(76, 29, 149, 0.04);
+      transition: background 0.3s ease;
+    }
+
+    .task-title {
+      margin: 4px 0 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .task-title.is-done {
+      text-decoration: line-through;
+      opacity: 0.78;
+    }
+
+    .task-notes {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 8px 11px;
+    }
+
+    .swatch-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 8px 12px;
+    }
+
+    .swatch-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .swatch-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+      cursor: pointer;
+      transition: transform 0.12s ease;
+    }
+
+    .swatch-btn.is-selected {
+      border-color: var(--text-main);
+      transform: scale(1.14);
+    }
+
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 8px;
+    }
+
+    .template-btn {
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border-sage);
+      background: #ffffff;
+      cursor: pointer;
+      min-height: 48px;
+    }
+
+    .template-btn:hover {
+      background: var(--bg-subtle);
+    }
+
+    .roster-row {
+      display: grid;
+      grid-template-columns: 84px 1fr 78px 1fr;
+      gap: 8px;
+      align-items: center;
+      background: var(--bg-card);
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+    }
+
+    @media (max-width: 520px) {
+      .roster-row {
+        grid-template-columns: 1fr 72px;
+      }
+      .roster-region-tag {
+        grid-column: 1 / -1;
+      }
+      .roster-initials {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .app-footer {
+      border-top: 1px solid var(--border-soft);
+      background: var(--bg-subtle);
+      padding: 16px;
+      margin-top: 36px;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =======================================================================
+       1. FULL-SCREEN WELCOME SPLASH SCREEN (Exclusive Greeting)
+       ======================================================================= -->
+  <div id="welcomeSplashOverlay" role="dialog" aria-label="Welcome greeting" onclick="window.__dismissWelcomeSplash(event)">
+    <div class="splash-orb top"></div>
+    <div class="splash-orb bottom"></div>
+
+    <div class="splash-card">
+      <div class="splash-pill">
+        <span class="dot-sage"></span>
+        <span>12 Houses • Calm &amp; Organized</span>
+      </div>
+
+      <p id="splashTimeGreeting">Good afternoon</p>
+      <h2 class="splash-title">Hello gorgeous</h2>
+      <p class="splash-sub">
+        Take a breath — let’s take things one house at a time.
+      </p>
+
+      <button
+        id="dismissSplashBtn"
+        type="button"
+        class="btn-primary-pill"
+        onclick="window.__dismissWelcomeSplash(event)"
+      >
+        Open My Houses
+      </button>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       CLEAN STICKY DASHBOARD HEADER (No repeated greeting here)
+       ======================================================================= -->
+  <header class="app-header">
+    <div class="container">
+      <div class="header-top">
+        <div>
+          <h1 class="brand-title">House Bubbles &amp; Triage</h1>
+          <p id="subRosterSummary" class="brand-sub">12 Houses (7 Lehigh • 5 Kutztown) • 24 Consumers</p>
+        </div>
+
+        <button id="replayWelcomeBtn" type="button" class="btn btn-sage" onclick="window.__showWelcomeSplash()">
+          Replay Welcome
+        </button>
+      </div>
+
+      <div class="header-actions">
+        <button id="openChatGptModalBtn" type="button" class="btn btn-plum">
+          Quick Paste from ChatGPT
+        </button>
+
+        <button id="exportAllIcsBtn" type="button" class="btn btn-sage" title="Add upcoming deadlines to iPhone Calendar">
+          🔔 Export All Alerts (.ics)
+        </button>
+
+        <button id="openRosterModalBtn" type="button" class="btn btn-soft-plum">
+          House Roster &amp; Names
+        </button>
+
+        <button id="openPaletteModalBtn" type="button" class="btn">
+          <span id="headerSwatchDot" class="swatch-dot-mini" style="background:#e9d5ff;"></span>
+          <span id="headerPaletteLabel">Lilac &amp; Sage</span>
+        </button>
+
+        <button id="clearDemoBtn" type="button" class="btn btn-danger-soft">
+          Clear Demo Data
+        </button>
+      </div>
+
+      <!-- Non-Blocking Encouraging Toast Banner -->
+      <div id="toastBanner" role="status" aria-live="polite">
+        <span id="toastText"></span>
+        <div class="toast-actions">
+          <button id="toastUndoBtn" type="button" class="btn-mini" style="display:none;">Undo</button>
+          <button id="toastDismissBtn" type="button" class="btn-mini">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- =======================================================================
+       MAIN WORKSPACE
+       ======================================================================= -->
+  <main class="container">
+
+    <!-- 2. CALM "TODAY'S FOCUS (TOP 3)" PRIORITY STRIP ABOVE THE BUBBLES -->
+    <section class="priority-strip" aria-label="Today's Focus Top 3">
+      <div id="priorityStripToggle" class="strip-header" role="button" tabindex="0" aria-expanded="true">
+        <div class="strip-title-wrap">
+          <h2 class="strip-title">Today’s Focus (Top 3)</h2>
+          <span id="top3BadgeCount" class="badge-count">0 urgent / priority</span>
+        </div>
+        <span id="priorityCollapseLabel" style="font-size:12px;font-weight:700;color:var(--text-muted);">Hide ▲</span>
+      </div>
+
+      <div id="priorityStripBody" class="strip-body">
+        <!-- Populated dynamically with the 3 highest-priority items across all 12 houses -->
+      </div>
+    </section>
+
+    <!-- Region Filter Bar -->
+    <div class="filter-bar">
+      <div id="regionFilterPills" class="pill-group">
+        <button type="button" data-region="All" class="btn btn-plum">All Houses (12)</button>
+        <button type="button" data-region="Lehigh" class="btn">Lehigh (7)</button>
+        <button type="button" data-region="Kutztown" class="btn">Kutztown (5)</button>
+      </div>
+      <span style="font-size:12px;font-weight:600;color:var(--text-muted);">
+        Tap any house bubble to inspect, schedule, or color in completed tasks
+      </span>
+    </div>
+
+    <!-- 6. LEHIGH REGION (7 HOUSES) -->
+    <section id="lehighSection" class="region-section">
+      <div class="region-header">
+        <h2 class="region-title">Lehigh Region <span style="font-size:14px;color:var(--accent-plum);font-family:var(--font-sans);">(7 Houses)</span></h2>
+        <span id="lehighConsumerBadge" class="badge-count">14 Consumers</span>
+      </div>
+      <div id="lehighBubblesGrid" class="bubbles-grid"></div>
+    </section>
+
+    <!-- 6. KUTZTOWN REGION (5 HOUSES) -->
+    <section id="kutztownSection" class="region-section">
+      <div class="region-header">
+        <h2 class="region-title">Kutztown Region <span style="font-size:14px;color:var(--accent-sage);font-family:var(--font-sans);">(5 Houses)</span></h2>
+        <span id="kutztownConsumerBadge" class="badge-count" style="background:var(--bg-sage);color:var(--accent-sage);">10 Consumers</span>
+      </div>
+      <div id="kutztownBubblesGrid" class="bubbles-grid"></div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    Saved automatically on your device (localStorage). Tap <strong>🔔 Remind</strong> on any task to add lock-screen alerts to iPhone Calendar.
+  </footer>
+
+  <!-- 5. THUMB-FRIENDLY FLOATING QUICK-ADD (+) BUTTON -->
+  <button
+    id="fabQuickAddBtn"
+    type="button"
+    class="fab-quick-add"
+    aria-label="Quick add task or appointment"
+    title="Quick Add (10 seconds)"
+  >
+    +
+  </button>
+
+  <!-- =======================================================================
+       MODAL A: HOUSE DRILL-DOWN DRAWER
+       ======================================================================= -->
+  <div id="houseDrawerModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="House Details">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+            <span id="drawerRegionPill" class="badge-count">Lehigh</span>
+            <span id="drawerConsumerPill" class="badge-count" style="background:var(--bg-sage);color:var(--accent-sage);">2 Consumers</span>
+          </div>
+          <input id="drawerHouseNameInput" type="text" class="inline-name-input" aria-label="Rename house" />
+          <div id="drawerInitialsText" style="font-size:12px;color:var(--text-muted);margin-top:4px;"></div>
+        </div>
+
+        <button id="closeHouseDrawerBtn" type="button" class="btn btn-soft-plum">Done</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Drawer Action Buttons -->
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <button id="drawerQuickAddToggleBtn" type="button" class="btn btn-plum">+ Add to This House</button>
+          <button id="drawerTemplatesToggleBtn" type="button" class="btn btn-sage">Program Specialist Templates</button>
+        </div>
+
+        <!-- Inline Quick Add Form inside House Drawer -->
+        <form id="drawerAddForm" style="display:none;background:var(--bg-subtle);border:1px solid var(--border-soft);border-radius:20px;padding:14px;">
+          <div class="form-grid two-col">
+            <div style="grid-column:1 / -1;">
+              <label class="field-label" for="dTitle">Task / Appointment / Paperwork *</label>
+              <input id="dTitle" class="input" type="text" required placeholder="e.g., Monthly Physical Oversight or Annual ISP" />
+            </div>
+            <div>
+              <label class="field-label" for="dCategory">Category</label>
+              <select id="dCategory" class="select">
+                <option value="Appointments">Appointments</option>
+                <option value="Inspections">Inspections</option>
+                <option value="Meetings">Meetings</option>
+                <option value="Paperwork / Deadlines">Paperwork / Deadlines</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="dRecurrence">Repeat Cadence</label>
+              <select id="dRecurrence" class="select">
+                <option value="None">None (One-Time)</option>
+                <option value="Daily">Daily</option>
+                <option value="Weekly">Weekly</option>
+                <option value="Monthly">Monthly</option>
+                <option value="Quarterly">Quarterly</option>
+                <option value="Annually">Annually</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="dDate">Due / Event Date</label>
+              <input id="dDate" class="input" type="date" />
+            </div>
+            <div>
+              <label class="field-label" for="dTime">Start Time (Optional)</label>
+              <input id="dTime" class="input" type="time" />
+            </div>
+            <div style="grid-column:1 / -1;">
+              <label class="field-label" for="dNotes">Notes / Protocol / Consumer</label>
+              <input id="dNotes" class="input" type="text" placeholder="e.g., Date >= 30 days before ISP; check GERD/Falls protocols" />
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+            <button id="drawerCancelAddBtn" type="button" class="btn">Cancel</button>
+            <button type="submit" class="btn btn-plum">Save Item</button>
+          </div>
+        </form>
+
+        <!-- Program Specialist Cadence Templates Panel -->
+        <div id="drawerTemplatesBox" style="display:none;background:var(--bg-sage);border:1px solid var(--border-sage);border-radius:20px;padding:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <strong style="font-size:12px;text-transform:uppercase;letter-spacing:0.03em;color:var(--accent-sage);">
+              Tap Any Duty to Add to This House (Auto-Sets Recurrence)
+            </strong>
+            <button id="closeTemplatesBoxBtn" type="button" class="btn-mini">Hide</button>
+          </div>
+          <div id="templatesGrid" class="template-grid"></div>
+        </div>
+
+        <!-- Category Filter Tabs -->
+        <div id="drawerCategoryPills" class="pill-group"></div>
+
+        <!-- Tasks List -->
+        <div id="drawerTasksList" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       MODAL B: FLOATING 10-SECOND QUICK-ADD (+) MODAL
+       ======================================================================= -->
+  <div id="fabModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Quick Add Item">
+    <div class="modal-sheet narrow">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Quick Add (10 Seconds)</h3>
+          <p style="margin:2px 0 0;font-size:12px;color:var(--text-muted);">Log an appointment, inspection, or paperwork deadline fast.</p>
+        </div>
+        <button id="closeFabModalBtn" type="button" class="btn btn-soft-plum">Close</button>
+      </div>
+
+      <form id="fabQuickForm" class="modal-body">
+        <div>
+          <label class="field-label" for="fabHouseSelect">1. Pick House *</label>
+          <select id="fabHouseSelect" class="select"></select>
+        </div>
+
+        <div>
+          <label class="field-label" for="fabTitleInput">2. What Needs Done? *</label>
+          <input id="fabTitleInput" class="input" type="text" required placeholder="e.g., Call SC re: EIM or Complete Quarterly Set-Works" />
+        </div>
+
+        <div class="form-grid two-col">
+          <div>
+            <label class="field-label" for="fabCategorySelect">Category</label>
+            <select id="fabCategorySelect" class="select">
+              <option value="Paperwork / Deadlines">Paperwork / Deadlines</option>
+              <option value="Appointments">Appointments</option>
+              <option value="Inspections">Inspections</option>
+              <option value="Meetings">Meetings</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="fabRecurrenceSelect">Repeat Cadence</label>
+            <select id="fabRecurrenceSelect" class="select">
+              <option value="None">None (One-Time)</option>
+              <option value="Daily">Daily</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Quarterly">Quarterly</option>
+              <option value="Annually">Annually</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="fabDateInput">Due / Event Date</label>
+            <input id="fabDateInput" class="input" type="date" />
+          </div>
+          <div>
+            <label class="field-label" for="fabTimeInput">Start Time (Optional)</label>
+            <input id="fabTimeInput" class="input" type="time" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-plum" style="width:100%;margin-top:4px;">
+          Save to House Bubble
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       MODAL C: 2-TAP "QUICK PASTE FROM CHATGPT" (OUTLOOK SCREENSHOT INTAKE)
+       ======================================================================= -->
+  <div id="chatGptModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Quick Paste from ChatGPT">
+    <div class="modal-sheet narrow">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Quick Paste from ChatGPT</h3>
+          <p style="margin:2px 0 0;font-size:12px;color:var(--text-muted);">Works even when Outlook is locked down by IT.</p>
+        </div>
+        <button id="closeChatGptModalBtn" type="button" class="btn btn-soft-plum">Close</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="background:var(--bg-subtle);border:1px solid var(--border-soft);border-radius:18px;padding:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+            <strong style="font-size:12px;color:var(--accent-plum-dark);">1. Screenshot Outlook → Upload to ChatGPT</strong>
+            <button id="copyPromptBtn" type="button" class="btn btn-plum" style="min-height:40px;padding:6px 12px;">
+              Copy ChatGPT Screenshot Prompt
+            </button>
+          </div>
+          <p style="margin:0;font-size:12.5px;color:var(--text-muted);">
+            Take a screenshot of your Outlook calendar week or SC/ISP email invite, paste this prompt into ChatGPT with the screenshot, and copy ChatGPT's reply.
+          </p>
+        </div>
+
+        <div>
+          <label class="field-label" for="chatGptPasteInput">2. Paste ChatGPT Reply &amp; Load into Houses</label>
+          <textarea
+            id="chatGptPasteInput"
+            class="textarea"
+            placeholder="Paste CSV or JSON lines from ChatGPT here...&#10;Example:&#10;Lehigh 1,Monthly Physical Oversight,Inspections,2026-11-23,10:00,Monthly,Check GERD &amp; Falls protocols"
+          ></textarea>
+        </div>
+
+        <button id="loadChatGptBtn" type="button" class="btn btn-sage" style="width:100%;">
+          Load into Houses
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       MODAL D: HOUSE ROSTER & NAMES (12 HOUSES / 24 CONSUMERS)
+       ======================================================================= -->
+  <div id="rosterModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="House Roster and Names">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">House Roster &amp; Names</h3>
+          <p id="rosterLiveTotalText" style="margin:2px 0 0;font-size:12px;font-weight:700;color:var(--accent-sage);">
+            Total Consumers: 24 / 24 across 12 Houses
+          </p>
+        </div>
+        <button id="closeRosterModalBtn" type="button" class="btn btn-plum">Save &amp; Close</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="margin:0;font-size:12.5px;color:var(--text-muted);">
+          Customize your 7 Lehigh and 5 Kutztown home names, consumer counts, and consumer initials/ISP months. Changes update across all bubbles and tasks automatically.
+        </p>
+        <div id="rosterListContainer" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       MODAL E: SEASONAL PALETTES & 4 CUSTOM HEX COLOR-IN SWATCHES
+       ======================================================================= -->
+  <div id="paletteModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Seasonal and Custom Colors">
+    <div class="modal-sheet narrow">
+      <div class="modal-header">
+        <h3 class="modal-title">Seasonal &amp; Custom Coloring Swatches</h3>
+        <button id="closePaletteModalBtn" type="button" class="btn btn-soft-plum">Done</button>
+      </div>
+
+      <div class="modal-body">
+        <div>
+          <label class="field-label" for="paletteSelect">Seasonal Theme Preset</label>
+          <select id="paletteSelect" class="select">
+            <option value="lilac_sage">Lilac &amp; Sage (Default Purple + Calming Green)</option>
+            <option value="spring_blossom">Spring Blossom</option>
+            <option value="summer_meadow">Summer Meadow</option>
+            <option value="autumn_harvest">Autumn Harvest</option>
+            <option value="winter_frost">Winter Frost</option>
+          </select>
+        </div>
+
+        <div>
+          <span class="field-label">Active Coloring Swatches (Tap to set default fill)</span>
+          <div id="activeSwatchesPreviewRow" class="swatch-row" style="margin-top:6px;"></div>
+        </div>
+
+        <div style="border-top:1px solid var(--border-soft);padding-top:14px;">
+          <span class="field-label">4 Custom Hex Color-In Swatches (Pick Your Own)</span>
+          <div id="customSwatchesEditors" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       GLOBAL SPLASH DISMISSAL & REPLAY (Guaranteed immediate mobile Safari tap)
+       ========================================================================= */
+    window.__dismissWelcomeSplash = function (e) {
+      if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+      var el = document.getElementById('welcomeSplashOverlay');
+      if (!el) return;
+      if (window.__splashTimer) {
+        clearTimeout(window.__splashTimer);
+        window.__splashTimer = null;
+      }
+      el.classList.add('is-hidden');
+    };
+
+    window.__showWelcomeSplash = function () {
+      var el = document.getElementById('welcomeSplashOverlay');
+      if (!el) return;
+      if (window.__splashTimer) clearTimeout(window.__splashTimer);
+      var hr = new Date().getHours();
+      var greeting = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+      var greetNode = document.getElementById('splashTimeGreeting');
+      if (greetNode) greetNode.textContent = greeting;
+      el.classList.remove('is-hidden');
+      window.__splashTimer = setTimeout(function () {
+        window.__dismissWelcomeSplash();
+      }, 2500);
+    };
+
+    (function () {
+      var STORAGE_KEY = 'ps_house_bubbles_v3';
+
+      var SEASONAL_THEMES = {
+        lilac_sage: {
+          label: 'Lilac & Sage',
+          vars: {
+            '--bg-page': '#fbf8ff',
+            '--bg-subtle': '#f4eeff',
+            '--bg-sage': '#edf8f2',
+            '--border-soft': '#e6d8fb',
+            '--border-sage': '#c3e8d4',
+            '--accent-plum': '#7c3aed',
+            '--accent-plum-dark': '#5b21b6',
+            '--accent-sage': '#1d7a4f',
+            '--splash-grad': 'linear-gradient(145deg, #f3e8ff 0%, #fcfaff 52%, #dcfce7 100%)',
+            '--orb-1': '#e9d5ff',
+            '--orb-2': '#a7f3d0'
+          }
+        },
+        spring_blossom: {
+          label: 'Spring Blossom',
+          vars: {
+            '--bg-page': '#fff9fc',
+            '--bg-subtle': '#fce7f3',
+            '--bg-sage': '#ecfdf5',
+            '--border-soft': '#fbcfe8',
+            '--border-sage': '#bbf7d0',
+            '--accent-plum': '#c026d3',
+            '--accent-plum-dark': '#86198f',
+            '--accent-sage': '#15803d',
+            '--splash-grad': 'linear-gradient(145deg, #fce7f3 0%, #fff9fc 52%, #dcfce7 100%)',
+            '--orb-1': '#f5d0fe',
+            '--orb-2': '#bbf7d0'
+          }
+        },
+        summer_meadow: {
+          label: 'Summer Meadow',
+          vars: {
+            '--bg-page': '#fafef9',
+            '--bg-subtle': '#f3e8ff',
+            '--bg-sage': '#ecfccb',
+            '--border-soft': '#e9d5ff',
+            '--border-sage': '#bef264',
+            '--accent-plum': '#7e22ce',
+            '--accent-plum-dark': '#581c87',
+            '--accent-sage': '#3f6212',
+            '--splash-grad': 'linear-gradient(145deg, #fef9c3 0%, #fafef9 52%, #d1fae5 100%)',
+            '--orb-1': '#fde68a',
+            '--orb-2': '#a7f3d0'
+          }
+        },
+        autumn_harvest: {
+          label: 'Autumn Harvest',
+          vars: {
+            '--bg-page': '#fdfaf7',
+            '--bg-subtle': '#f5ebff',
+            '--bg-sage': '#f0fdf4',
+            '--border-soft': '#e9d5ff',
+            '--border-sage': '#bbf7d0',
+            '--accent-plum': '#6b21a8',
+            '--accent-plum-dark': '#4c1d95',
+            '--accent-sage': '#166534',
+            '--splash-grad': 'linear-gradient(145deg, #f3e8ff 0%, #fffbeb 52%, #dcfce7 100%)',
+            '--orb-1': '#e9d5ff',
+            '--orb-2': '#fde68a'
+          }
+        },
+        winter_frost: {
+          label: 'Winter Frost',
+          vars: {
+            '--bg-page': '#f8faff',
+            '--bg-subtle': '#eef2ff',
+            '--bg-sage': '#f0fdfa',
+            '--border-soft': '#c7d2fe',
+            '--border-sage': '#99f6e4',
+            '--accent-plum': '#6366f1',
+            '--accent-plum-dark': '#4338ca',
+            '--accent-sage': '#0f766e',
+            '--splash-grad': 'linear-gradient(145deg, #e0e7ff 0%, #f8faff 52%, #ccfbf1 100%)',
+            '--orb-1': '#c7d2fe',
+            '--orb-2': '#99f6e4'
+          }
+        }
+      };
+
+      var ENCOURAGEMENTS = [
+        'One less thing on your mind—nice job!',
+        'Handled like a pro! Steady, calm progress.',
+        'Future you says thank you!',
+        'Checked off and colored in—keep shining!',
+        'Another house detail smoothly taken care of!'
+      ];
+
+      /* =======================================================================
+         PROGRAM SPECIALIST CADENCE TEMPLATES (From Job Duties Document)
+         ======================================================================= */
+      var CADENCE_TEMPLATES = [
+        {
+          title: 'EIM Entry & SC Contact (24h / 72h Med Error & Restraint)',
+          category: 'Paperwork / Deadlines',
+          recurrence: 'Daily',
+          notes: 'Daily: Enter incidents within 24 hrs (med error & restraint 72 hrs). Contact SC once submitted.'
+        },
+        {
+          title: 'Respond to SC & Family Emails (24h M-F) & Set-Works Review',
+          category: 'Paperwork / Deadlines',
+          recurrence: 'Daily',
+          notes: 'Daily: Respond to all SC/family emails within 24 hrs M-F, complete due paperwork, review Set-Works.'
+        },
+        {
+          title: 'EIM Weekly Finalization (Prior to Wed 4:30 PM)',
+          category: 'Paperwork / Deadlines',
+          recurrence: 'Weekly',
+          notes: 'Weekly: Finalize all open EIMs prior to Wednesday at 4:30 PM.'
+        },
+        {
+          title: 'Weekly Med Error Debrief, Non-Oral Meds & Billing/Training Review',
+          category: 'Paperwork / Deadlines',
+          recurrence: 'Weekly',
+          notes: 'Weekly: Reorder topical/eyedrops/MiraLAX/injections; review training, missing billing notes, refusals & SC issues.'
+        },
+        {
+          title: 'Monthly Physical Oversight & Protocols (GERD, Constipation, Falls)',
+          category: 'Inspections',
+          recurrence: 'Monthly',
+          notes: 'Monthly: Site inspect home and verify GERD, Constipation & Falls protocols are current.'
+        },
+        {
+          title: 'Monthly Fire Drill Review (< 2:30 min & Alternating Exits)',
+          category: 'Inspections',
+          recurrence: 'Monthly',
+          notes: 'Monthly: Verify drill < 2:30 min (repeat fail within 24h), alternate exits monthly, awake night drill quarterly.'
+        },
+        {
+          title: 'Monthly Medical Oversight, HRST & CORS Spend-Down Review',
+          category: 'Paperwork / Deadlines',
+          recurrence: 'Monthly',
+          notes: 'Monthly: Ensure medical consults, update HRST by deadline, check CORS email for spend-downs.'
+        },
+        {
+          title: 'Quarterly Consumer Review (Set-Works) & Critical Info Sign-In',
+          category: 'Paperwork / Deadlines',
+          recurrence: 'Quarterly',
+          notes: 'Quarterly: Complete in Set-Works Forms section; review critical info sign-in sheets.'
+        },
+        {
+          title: 'Quarterly Awake Night Inspection (with PC) & LIS QA Prep',
+          category: 'Inspections',
+          recurrence: 'Quarterly',
+          notes: 'Quarterly: Conduct awake night inspection with PC; review outcome docs, fire drills, SNAPS & LIS readiness.'
+        },
+        {
+          title: 'Annual Assessment & SNAP (>= 30 Days Prior to ISP)',
+          category: 'Paperwork / Deadlines',
+          recurrence: 'Annually',
+          notes: 'Annually: Update on Set-Works and date at least 30 days before annual ISP meeting date.'
+        },
+        {
+          title: 'Consumer Annual ISP Meeting (~3 Months Prior Invite Prep)',
+          category: 'Meetings',
+          recurrence: 'Annually',
+          notes: 'Annually: SC emails invite ~3 months prior; update HRST & Set-Works outcome end dates prior to ISP.'
+        },
+        {
+          title: 'Annual Consents, Door Lock, Emergency Med, Fire, Dental & Demo Photo',
+          category: 'Paperwork / Deadlines',
+          recurrence: 'Annually',
+          notes: 'Annually: Consents/door lock, Emergency Medical Plan, Fire safety, Dental plan, Demo photo, ESSP, Inventory, Physicals.'
+        },
+        {
+          title: 'Waiver Monitoring Plan of Correction (Within 1 Week)',
+          category: 'Paperwork / Deadlines',
+          recurrence: 'None',
+          notes: 'As Needed: Complete POC within 1 week of receipt; update plans/protocols & train trainers.'
+        },
+        {
+          title: 'Medical Appointment Backup / In-Ratio Coverage',
+          category: 'Appointments',
+          recurrence: 'None',
+          notes: 'As Needed: Serve as backup to APC & PC or assist with ratio coverage when available.'
+        }
+      ];
+
+      function isoDateOffset(days) {
+        var d = new Date();
+        d.setDate(d.getDate() + days);
+        var pad = function (n) { return String(n).padStart(2, '0'); };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+      }
+
+      function addCadenceToDate(dateStr, recurrence) {
+        var base = dateStr ? new Date(dateStr + 'T12:00:00') : new Date();
+        if (isNaN(base.getTime())) base = new Date();
+        if (recurrence === 'Daily') base.setDate(base.getDate() + 1);
+        else if (recurrence === 'Weekly') base.setDate(base.getDate() + 7);
+        else if (recurrence === 'Monthly') base.setMonth(base.getMonth() + 1);
+        else if (recurrence === 'Quarterly') base.setMonth(base.getMonth() + 3);
+        else if (recurrence === 'Annually') base.setFullYear(base.getFullYear() + 1);
+        var pad = function (n) { return String(n).padStart(2, '0'); };
+        return base.getFullYear() + '-' + pad(base.getMonth() + 1) + '-' + pad(base.getDate());
+      }
+
+      // 12 Houses (7 Lehigh, 5 Kutztown) summing to 24 consumers (uneven split)
+      function getDefaultHouses() {
+        return [
+          { id: 'lehigh-1', name: 'Lehigh 1', region: 'Lehigh', consumers: 3, initials: 'A.M., B.R., C.T.' },
+          { id: 'lehigh-2', name: 'Lehigh 2', region: 'Lehigh', consumers: 2, initials: 'D.K., E.S.' },
+          { id: 'lehigh-3', name: 'Lehigh 3', region: 'Lehigh', consumers: 2, initials: 'F.L., G.H.' },
+          { id: 'lehigh-4', name: 'Lehigh 4', region: 'Lehigh', consumers: 2, initials: 'H.P., J.W.' },
+          { id: 'lehigh-5', name: 'Lehigh 5', region: 'Lehigh', consumers: 2, initials: 'K.N., L.B.' },
+          { id: 'lehigh-6', name: 'Lehigh 6', region: 'Lehigh', consumers: 2, initials: 'M.D., N.G.' },
+          { id: 'lehigh-7', name: 'Lehigh 7', region: 'Lehigh', consumers: 1, initials: 'P.V.' },
+          { id: 'kutztown-1', name: 'Kutztown 1', region: 'Kutztown', consumers: 2, initials: 'R.C., S.J.' },
+          { id: 'kutztown-2', name: 'Kutztown 2', region: 'Kutztown', consumers: 2, initials: 'T.M., V.A.' },
+          { id: 'kutztown-3', name: 'Kutztown 3', region: 'Kutztown', consumers: 2, initials: 'W.E., Y.Z.' },
+          { id: 'kutztown-4', name: 'Kutztown 4', region: 'Kutztown', consumers: 2, initials: 'B.C., K.L.' },
+          { id: 'kutztown-5', name: 'Kutztown 5', region: 'Kutztown', consumers: 2, initials: 'N.R., S.P.' }
+        ];
+      }
+
+      function getDefaultItems() {
+        return [
+          {
+            id: 'demo-1',
+            houseId: 'lehigh-1',
+            title: 'EIM Weekly Finalization (Before Wed 4:30 PM)',
+            category: 'Paperwork / Deadlines',
+            date: isoDateOffset(0),
+            startTime: '15:30',
+            recurrence: 'Weekly',
+            notes: 'Verify 24h/72h entries and confirm SC was contacted.',
+            completed: false,
+            fillColor: '#f3e8ff'
+          },
+          {
+            id: 'demo-2',
+            houseId: 'lehigh-2',
+            title: 'Monthly Physical Oversight & GERD/Falls Protocols',
+            category: 'Inspections',
+            date: isoDateOffset(1),
+            startTime: '10:00',
+            recurrence: 'Monthly',
+            notes: 'Site inspect home; verify GERD, Constipation & Falls protocols are current.',
+            completed: false,
+            fillColor: '#d1fae5'
+          },
+          {
+            id: 'demo-3',
+            houseId: 'kutztown-1',
+            title: 'Annual Assessment & SNAP (>= 30 Days Pre-ISP)',
+            category: 'Paperwork / Deadlines',
+            date: isoDateOffset(12),
+            startTime: '13:00',
+            recurrence: 'Annually',
+            notes: 'Complete on Set-Works and date at least 30 days before annual ISP meeting.',
+            completed: false,
+            fillColor: '#e9d5ff'
+          },
+          {
+            id: 'demo-4',
+            houseId: 'kutztown-2',
+            title: 'Consumer Annual ISP Team Meeting',
+            category: 'Meetings',
+            date: isoDateOffset(2),
+            startTime: '11:00',
+            recurrence: 'Annually',
+            notes: 'Verify HRST and Set-Works outcome end dates updated prior to ISP.',
+            completed: false,
+            fillColor: '#a7f3d0'
+          },
+          {
+            id: 'demo-5',
+            houseId: 'lehigh-4',
+            title: 'Medical Consult Follow-Up & Dental Plan Check',
+            category: 'Appointments',
+            date: isoDateOffset(4),
+            startTime: '09:30',
+            recurrence: 'None',
+            notes: 'Ensure consult form is filed and PC has ratio coverage if needed.',
+            completed: false,
+            fillColor: '#fce7f3'
+          }
+        ];
+      }
+
+      function getDefaultSettings() {
+        return {
+          paletteKey: 'lilac_sage',
+          customSwatches: ['#f3e8ff', '#d1fae5', '#fce7f3', '#fef3c7'],
+          activeSwatch: '#f3e8ff'
+        };
+      }
+
+      var state = {
+        houses: [],
+        items: [],
+        settings: getDefaultSettings(),
+        regionFilter: 'All',
+        activeHouseId: null,
+        drawerCategory: 'All',
+        stripCollapsed: false,
+        lastUndoSnapshot: null
+      };
+
+      function loadState() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            return { houses: getDefaultHouses(), items: getDefaultItems(), settings: getDefaultSettings() };
+          }
+          var parsed = JSON.parse(raw);
+          return {
+            houses: Array.isArray(parsed.houses) && parsed.houses.length === 12 ? parsed.houses : getDefaultHouses(),
+            items: Array.isArray(parsed.items) ? parsed.items : getDefaultItems(),
+            settings: Object.assign({}, getDefaultSettings(), parsed.settings || {})
+          };
+        } catch (e) {
+          return { houses: getDefaultHouses(), items: getDefaultItems(), settings: getDefaultSettings() };
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({ houses: state.houses, items: state.items, settings: state.settings })
+          );
+        } catch (e) {
+          showToast('Could not save changes to device storage.', true);
+        }
+      }
+
+      function escapeHtml(str) {
+        return String(str == null ? '' : str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function applyThemeVariables() {
+        var theme = SEASONAL_THEMES[state.settings.paletteKey] || SEASONAL_THEMES.lilac_sage;
+        var root = document.documentElement;
+        Object.keys(theme.vars).forEach(function (k) {
+          root.style.setProperty(k, theme.vars[k]);
+        });
+        document.getElementById('headerPaletteLabel').textContent = theme.label;
+        document.getElementById('headerSwatchDot').style.background = state.settings.activeSwatch;
+      }
+
+      /* =======================================================================
+         DUE-DATE URGENCY TIERS & COLOR-CODED FLAGS
+         ======================================================================= */
+      function getDueClassification(item) {
+        if (!item.date) {
+          return { tier: 4, label: 'Flexible Date', cls: 'urgency-calm', dotType: null };
+        }
+        var parts = item.date.split('-').map(Number);
+        if (parts.length !== 3) {
+          return { tier: 4, label: item.date, cls: 'urgency-calm', dotType: null };
+        }
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var target = new Date(parts[0], parts[1] - 1, parts[2], 0, 0, 0);
+        var diffDays = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) {
+          return { tier: 1, label: 'Overdue', cls: 'urgency-overdue', dotType: 'red' };
+        }
+        if (diffDays === 0) {
+          return { tier: 1, label: 'Due Today', cls: 'urgency-overdue', dotType: 'red' };
+        }
+        if (diffDays <= 2) {
+          return { tier: 2, label: diffDays === 1 ? 'Due Tomorrow • 48h' : 'Coming Up • 48h', cls: 'urgency-soon', dotType: 'amber' };
+        }
+        var isPrepTask = /30\s*day|isp|monthly|annual|quarterly|hrst|assessment|oversight/i.test(item.title + ' ' + item.notes);
+        if (diffDays <= 30 && isPrepTask) {
+          return { tier: 3, label: 'Prep Window • ' + diffDays + 'd', cls: 'urgency-prep', dotType: null };
+        }
+        return { tier: 4, label: 'In ' + diffDays + ' days', cls: 'urgency-calm', dotType: null };
+      }
+
+      function formatFriendlyDateTime(item) {
+        if (!item.date) return item.startTime || 'No date set';
+        var parts = item.date.split('-').map(Number);
+        var label = item.date;
+        if (parts.length === 3) {
+          var d = new Date(parts[0], parts[1] - 1, parts[2]);
+          label = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
+        if (item.startTime) {
+          var tParts = item.startTime.split(':').map(Number);
+          var t = new Date(2026, 0, 1, tParts[0] || 0, tParts[1] || 0);
+          label += ' at ' + t.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        }
+        return label;
+      }
+
+      /* =======================================================================
+         1-TAP IPHONE CALENDAR REMINDER (.ICS WITH VALARM)
+         ======================================================================= */
+      function buildIcsEventBlock(item) {
+        var house = state.houses.find(function (h) { return h.id === item.houseId; });
+        var houseLabel = house ? house.name + ' (' + house.region + ')' : 'Program Specialist';
+        var parts = (item.date || isoDateOffset(0)).split('-').map(Number);
+        var tParts = (item.startTime || '09:00').split(':').map(Number);
+
+        var start = new Date(parts[0], (parts[1] || 1) - 1, parts[2] || 1, tParts[0] || 9, tParts[1] || 0, 0);
+        var end = new Date(start.getTime() + 45 * 60 * 1000);
+
+        function toIcsUtc(dt) {
+          var pad = function (n) { return String(n).padStart(2, '0'); };
+          return (
+            dt.getUTCFullYear() +
+            pad(dt.getUTCMonth() + 1) +
+            pad(dt.getUTCDate()) +
+            'T' +
+            pad(dt.getUTCHours()) +
+            pad(dt.getUTCMinutes()) +
+            pad(dt.getUTCSeconds()) +
+            'Z'
+          );
+        }
+
+        function escIcs(txt) {
+          return String(txt || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+        }
+
+        var uid = item.id + '@program-specialist-bubbles';
+        var summary = escIcs('[' + (house ? house.name : 'House') + '] ' + item.title);
+        var desc = escIcs((item.notes ? item.notes + ' | ' : '') + 'Category: ' + item.category + ' | Region: ' + houseLabel);
+
+        return [
+          'BEGIN:VEVENT',
+          'UID:' + uid,
+          'DTSTAMP:' + toIcsUtc(new Date()),
+          'DTSTART:' + toIcsUtc(start),
+          'DTEND:' + toIcsUtc(end),
+          'SUMMARY:' + summary,
+          'DESCRIPTION:' + desc,
+          'LOCATION:' + escIcs(houseLabel),
+          'BEGIN:VALARM',
+          'TRIGGER:-P1D',
+          'ACTION:DISPLAY',
+          'DESCRIPTION:Tomorrow: ' + summary,
+          'END:VALARM',
+          'BEGIN:VALARM',
+          'TRIGGER:-PT2H',
+          'ACTION:DISPLAY',
+          'DESCRIPTION:In 2 hours: ' + summary,
+          'END:VALARM',
+          'END:VEVENT'
+        ].join('\r\n');
+      }
+
+      function downloadIcsForItems(itemsList, filename) {
+        if (!itemsList || itemsList.length === 0) {
+          showToast('No open upcoming deadlines to export right now.', true);
+          return;
+        }
+        var content = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//Program Specialist House Bubbles//EN',
+          'CALSCALE:GREGORIAN',
+          'METHOD:PUBLISH',
+          itemsList.map(buildIcsEventBlock).join('\r\n'),
+          'END:VCALENDAR'
+        ].join('\r\n');
+
+        var blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Calendar alert downloaded! Tap "Add to Calendar" on your iPhone for lock-screen reminders.');
+      }
+
+      /* =======================================================================
+         TOAST WITH UNDO SUPPORT
+         ======================================================================= */
+      function showToast(message, isWarn, enableUndo) {
+        var banner = document.getElementById('toastBanner');
+        var textEl = document.getElementById('toastText');
+        var undoBtn = document.getElementById('toastUndoBtn');
+        textEl.textContent = message;
+        banner.classList.add('is-visible');
+        banner.classList.toggle('is-warn', Boolean(isWarn));
+        undoBtn.style.display = enableUndo ? 'inline-block' : 'none';
+      }
+
+      function hideToast() {
+        document.getElementById('toastBanner').classList.remove('is-visible');
+      }
+
+      /* =======================================================================
+         TASK COMPLETION + COLOR-IN + AUTO-RESETTING RECURRING DUTIES
+         ======================================================================= */
+      function toggleCompleteTask(itemId) {
+        var idx = state.items.findIndex(function (x) { return x.id === itemId; });
+        if (idx === -1) return;
+
+        // Save snapshot for Undo
+        state.lastUndoSnapshot = JSON.stringify(state.items);
+
+        var item = state.items[idx];
+        var wasDone = Boolean(item.completed);
+        item.completed = !wasDone;
+
+        if (item.completed) {
+          if (!item.fillColor) {
+            item.fillColor = state.settings.activeSwatch;
+          }
+          var phrase = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
+
+          if (item.recurrence && item.recurrence !== 'None') {
+            var nextDate = addCadenceToDate(item.date, item.recurrence);
+            var nextCycleItem = {
+              id: 'rec-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+              houseId: item.houseId,
+              title: item.title,
+              category: item.category,
+              date: nextDate,
+              startTime: item.startTime || '',
+              recurrence: item.recurrence,
+              notes: item.notes || '',
+              completed: false,
+              fillColor: state.settings.activeSwatch
+            };
+            state.items.unshift(nextCycleItem);
+            showToast(phrase + ' Next ' + item.recurrence.toLowerCase() + ' cycle queued for ' + nextDate + '.', false, true);
+          } else {
+            showToast(phrase, false, true);
+          }
+        }
+
+        saveState();
+        renderAll();
+      }
+
+      /* =======================================================================
+         RENDER FUNCTIONS
+         ======================================================================= */
+      function renderSummaryCounts() {
+        var totalConsumers = state.houses.reduce(function (s, h) { return s + (Number(h.consumers) || 0); }, 0);
+        var lehighConsumers = state.houses
+          .filter(function (h) { return h.region === 'Lehigh'; })
+          .reduce(function (s, h) { return s + (Number(h.consumers) || 0); }, 0);
+        var kutztownConsumers = state.houses
+          .filter(function (h) { return h.region === 'Kutztown'; })
+          .reduce(function (s, h) { return s + (Number(h.consumers) || 0); }, 0);
+
+        document.getElementById('subRosterSummary').textContent =
+          '12 Houses (7 Lehigh • 5 Kutztown) • ' + totalConsumers + ' Consumers';
+        document.getElementById('lehighConsumerBadge').textContent = lehighConsumers + ' Consumers';
+        document.getElementById('kutztownConsumerBadge').textContent = kutztownConsumers + ' Consumers';
+      }
+
+      function renderPriorityStrip() {
+        var openSorted = state.items
+          .filter(function (i) { return !i.completed; })
+          .map(function (i) { return { item: i, urg: getDueClassification(i) }; })
+          .sort(function (a, b) {
+            if (a.urg.tier !== b.urg.tier) return a.urg.tier - b.urg.tier;
+            return (a.item.date || '9999').localeCompare(b.item.date || '9999');
+          });
+
+        var top3 = openSorted.slice(0, 3);
+        var urgentCount = openSorted.filter(function (x) { return x.urg.tier <= 2; }).length;
+        document.getElementById('top3BadgeCount').textContent =
+          urgentCount > 0 ? urgentCount + ' due soon / urgent' : top3.length + ' top priorities';
+
+        var body = document.getElementById('priorityStripBody');
+        body.classList.toggle('is-collapsed', state.stripCollapsed);
+        document.getElementById('priorityCollapseLabel').textContent = state.stripCollapsed ? 'Show ▼' : 'Hide ▲';
+
+        if (top3.length === 0) {
+          body.innerHTML =
+            '<div class="priority-card" style="grid-column:1/-1;text-align:center;">' +
+            '<p style="margin:0;font-size:13px;font-weight:700;color:var(--accent-sage);">All caught up across all 12 houses! Enjoy the calm.</p>' +
+            '</div>';
+          return;
+        }
+
+        body.innerHTML = top3
+          .map(function (entry) {
+            var it = entry.item;
+            var urg = entry.urg;
+            var house = state.houses.find(function (h) { return h.id === it.houseId; });
+            var houseName = house ? house.name + ' (' + house.region + ')' : 'General';
+
+            return (
+              '<div class="priority-card">' +
+                '<div>' +
+                  '<div class="priority-top">' +
+                    '<span class="urgency-pill ' + urg.cls + '">' + escapeHtml(urg.label) + '</span>' +
+                    '<span class="house-tag">' + escapeHtml(houseName) + '</span>' +
+                  '</div>' +
+                  '<h3 class="priority-item-title" data-jump-house="' + escapeHtml(it.houseId) + '" style="margin-top:7px;">' +
+                    escapeHtml(it.title) +
+                  '</h3>' +
+                  '<div class="priority-meta" style="margin-top:3px;">' +
+                    escapeHtml(formatFriendlyDateTime(it)) + (it.recurrence && it.recurrence !== 'None' ? ' • Repeats ' + escapeHtml(it.recurrence) : '') +
+                  '</div>' +
+                '</div>' +
+                '<div class="priority-actions">' +
+                  '<button type="button" class="btn-mini" data-complete-id="' + escapeHtml(it.id) + '" style="background:var(--bg-sage);color:var(--accent-sage);">✓ Done &amp; Color</button>' +
+                  '<button type="button" class="btn-mini" data-ics-id="' + escapeHtml(it.id) + '">🔔 Alert</button>' +
+                  '<button type="button" class="btn-mini" data-jump-house="' + escapeHtml(it.houseId) + '">Open House</button>' +
+                '</div>' +
+              '</div>'
+            );
+          })
+          .join('');
+      }
+
+      function renderHouseBubbles() {
+        var showLehigh = state.regionFilter === 'All' || state.regionFilter === 'Lehigh';
+        var showKutztown = state.regionFilter === 'All' || state.regionFilter === 'Kutztown';
+        document.getElementById('lehighSection').style.display = showLehigh ? 'block' : 'none';
+        document.getElementById('kutztownSection').style.display = showKutztown ? 'block' : 'none';
+
+        function buildBubble(house) {
+          var hItems = state.items.filter(function (i) { return i.houseId === house.id; });
+          var openItems = hItems
+            .filter(function (i) { return !i.completed; })
+            .sort(function (a, b) {
+              var ua = getDueClassification(a).tier;
+              var ub = getDueClassification(b).tier;
+              if (ua !== ub) return ua - ub;
+              return (a.date || '9999').localeCompare(b.date || '9999');
+            });
+          var doneCount = hItems.filter(function (i) { return i.completed; }).length;
+          var nextItem = openItems[0];
+          var nextUrg = nextItem ? getDueClassification(nextItem) : null;
+          var isKutz = house.region === 'Kutztown';
+
+          var dotHtml = '';
+          if (nextUrg && nextUrg.dotType === 'red') {
+            dotHtml = '<span class="alert-dot" title="Due today or overdue"></span>';
+          } else if (nextUrg && nextUrg.dotType === 'amber') {
+            dotHtml = '<span class="alert-dot amber" title="Due within 48 hours"></span>';
+          }
+
+          return (
+            '<button type="button" class="house-bubble ' + (isKutz ? 'region-kutztown' : '') + '" data-open-house="' + escapeHtml(house.id) + '">' +
+              '<div class="bubble-top">' +
+                '<div style="min-width:0;">' +
+                  '<div class="bubble-name-row">' +
+                    '<span class="bubble-name">' + escapeHtml(house.name) + '</span>' +
+                    dotHtml +
+                  '</div>' +
+                  '<div class="bubble-sub">' +
+                    house.consumers + (house.consumers === 1 ? ' Consumer' : ' Consumers') +
+                    (house.initials ? ' (' + escapeHtml(house.initials) + ')' : '') +
+                    ' • ' + doneCount + ' colored' +
+                  '</div>' +
+                '</div>' +
+                '<span class="bubble-open-badge">' + openItems.length + ' open</span>' +
+              '</div>' +
+              '<div class="bubble-next-box">' +
+                (nextItem
+                  ? '<span class="bubble-next-label">' + escapeHtml(nextUrg.label) + ' • ' + escapeHtml(formatFriendlyDateTime(nextItem)) + '</span>' +
+                    '<p class="bubble-next-title">' + escapeHtml(nextItem.title) + '</p>'
+                  : '<span class="bubble-next-label" style="color:var(--accent-sage);">All Clear</span>' +
+                    '<p class="bubble-next-title" style="color:var(--text-muted);font-weight:600;">Tap to view or add duties</p>') +
+              '</div>' +
+            '</button>'
+          );
+        }
+
+        document.getElementById('lehighBubblesGrid').innerHTML = state.houses
+          .filter(function (h) { return h.region === 'Lehigh'; })
+          .map(buildBubble)
+          .join('');
+
+        document.getElementById('kutztownBubblesGrid').innerHTML = state.houses
+          .filter(function (h) { return h.region === 'Kutztown'; })
+          .map(buildBubble)
+          .join('');
+      }
+
+      function renderHouseDrawer() {
+        if (!state.activeHouseId) return;
+        var house = state.houses.find(function (h) { return h.id === state.activeHouseId; });
+        if (!house) return;
+
+        document.getElementById('drawerRegionPill').textContent = house.region + ' Region';
+        document.getElementById('drawerConsumerPill').textContent =
+          house.consumers + (house.consumers === 1 ? ' Consumer' : ' Consumers');
+        document.getElementById('drawerHouseNameInput').value = house.name;
+        document.getElementById('drawerInitialsText').textContent = house.initials
+          ? 'Consumers: ' + house.initials + ' (tap house name above to rename)'
+          : 'Tap house name above to customize';
+
+        var cats = ['All', 'Appointments', 'Inspections', 'Meetings', 'Paperwork / Deadlines'];
+        var allHouseItems = state.items.filter(function (i) { return i.houseId === house.id; });
+
+        document.getElementById('drawerCategoryPills').innerHTML = cats
+          .map(function (c) {
+            var count = c === 'All' ? allHouseItems.length : allHouseItems.filter(function (i) { return i.category === c; }).length;
+            var active = state.drawerCategory === c;
+            return (
+              '<button type="button" data-dcat="' + escapeHtml(c) + '" class="btn ' + (active ? 'btn-plum' : 'btn-soft-plum') + '" style="min-height:38px;padding:6px 12px;font-size:12px;">' +
+                escapeHtml(c) + ' (' + count + ')' +
+              '</button>'
+            );
+          })
+          .join('');
+
+        var filtered = allHouseItems
+          .filter(function (i) { return state.drawerCategory === 'All' || i.category === state.drawerCategory; })
+          .sort(function (a, b) {
+            if (Boolean(a.completed) !== Boolean(b.completed)) return a.completed ? 1 : -1;
+            var ua = getDueClassification(a).tier;
+            var ub = getDueClassification(b).tier;
+            if (ua !== ub) return ua - ub;
+            return (a.date || '9999').localeCompare(b.date || '9999');
+          });
+
+        var listEl = document.getElementById('drawerTasksList');
+        if (filtered.length === 0) {
+          listEl.innerHTML =
+            '<div class="task-card" style="text-align:center;padding:24px;">' +
+              '<p style="margin:0;font-weight:700;">No items in this category yet</p>' +
+              '<p style="margin:4px 0 0;font-size:12.5px;color:var(--text-muted);">Tap "+ Add to This House" or "Program Specialist Templates" above.</p>' +
+            '</div>';
+          return;
+        }
+
+        listEl.innerHTML = filtered
+          .map(function (it) {
+            var urg = getDueClassification(it);
+            var bgStyle = it.completed ? 'background:' + escapeHtml(it.fillColor || state.settings.activeSwatch) + ';' : '';
+            var swatches = state.settings.customSwatches;
+
+            return (
+              '<div class="task-card" style="' + bgStyle + '">' +
+                '<div>' +
+                  '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">' +
+                    '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+                      (!it.completed ? '<span class="urgency-pill ' + urg.cls + '">' + escapeHtml(urg.label) + '</span>' : '<span class="urgency-pill urgency-calm">Colored In ✓</span>') +
+                      '<span class="house-tag">' + escapeHtml(it.category) + '</span>' +
+                      (it.recurrence && it.recurrence !== 'None' ? '<span class="house-tag" style="background:var(--bg-sage);color:var(--accent-sage);">↻ ' + escapeHtml(it.recurrence) + '</span>' : '') +
+                    '</div>' +
+                    '<span style="font-size:12px;font-weight:600;color:var(--text-muted);">' + escapeHtml(formatFriendlyDateTime(it)) + '</span>' +
+                  '</div>' +
+                  '<h4 class="task-title ' + (it.completed ? 'is-done' : '') + '">' + escapeHtml(it.title) + '</h4>' +
+                '</div>' +
+                (it.notes ? '<p class="task-notes">' + escapeHtml(it.notes) + '</p>' : '') +
+                (it.completed
+                  ? '<div class="swatch-bar">' +
+                      '<span style="font-size:12px;font-weight:700;">Color in block:</span>' +
+                      '<div class="swatch-row">' +
+                        swatches
+                          .map(function (hex) {
+                            return (
+                              '<button type="button" class="swatch-btn ' + (it.fillColor === hex ? 'is-selected' : '') + '" data-recolor-id="' + escapeHtml(it.id) + '" data-hex="' + escapeHtml(hex) + '" style="background:' + escapeHtml(hex) + ';" title="Color with ' + escapeHtml(hex) + '"></button>'
+                            );
+                          })
+                          .join('') +
+                      '</div>' +
+                    '</div>'
+                  : '') +
+                '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+                  '<button type="button" class="btn ' + (it.completed ? '' : 'btn-sage') + '" data-complete-id="' + escapeHtml(it.id) + '" style="min-height:40px;padding:6px 12px;">' +
+                    (it.completed ? 'Reopen' : '✓ Done &amp; Color In') +
+                  '</button>' +
+                  (!it.completed
+                    ? '<button type="button" class="btn btn-soft-plum" data-ics-id="' + escapeHtml(it.id) + '" style="min-height:40px;padding:6px 12px;">🔔 Remind</button>'
+                    : '') +
+                  '<button type="button" class="btn btn-danger-soft" data-delete-id="' + escapeHtml(it.id) + '" style="margin-left:auto;min-height:40px;padding:6px 12px;">Delete</button>' +
+                '</div>' +
+              '</div>'
+            );
+          })
+          .join('');
+      }
+
+      function renderTemplatesGrid() {
+        document.getElementById('templatesGrid').innerHTML = CADENCE_TEMPLATES.map(function (tpl, idx) {
+          return (
+            '<button type="button" class="template-btn" data-tpl-index="' + idx + '">' +
+              '<strong style="display:block;font-size:12.5px;color:var(--text-main);">' + escapeHtml(tpl.title) + '</strong>' +
+              '<span style="display:block;font-size:11px;font-weight:700;color:var(--accent-sage);margin-top:2px;">' +
+                escapeHtml(tpl.category) + ' • Repeats ' + escapeHtml(tpl.recurrence) +
+              '</span>' +
+            '</button>'
+          );
+        }).join('');
+      }
+
+      function renderRosterModal() {
+        var total = state.houses.reduce(function (s, h) { return s + (Number(h.consumers) || 0); }, 0);
+        document.getElementById('rosterLiveTotalText').textContent = 'Total Consumers: ' + total + ' / 24 across 12 Houses';
+
+        document.getElementById('rosterListContainer').innerHTML = state.houses
+          .map(function (h) {
+            return (
+              '<div class="roster-row">' +
+                '<span class="house-tag roster-region-tag" style="text-align:center;">' + escapeHtml(h.region) + '</span>' +
+                '<input type="text" class="input" data-roster-name="' + escapeHtml(h.id) + '" value="' + escapeHtml(h.name) + '" aria-label="House name" />' +
+                '<input type="number" min="0" max="24" class="input" data-roster-count="' + escapeHtml(h.id) + '" value="' + Number(h.consumers || 0) + '" aria-label="Consumer count" />' +
+                '<input type="text" class="input roster-initials" data-roster-initials="' + escapeHtml(h.id) + '" value="' + escapeHtml(h.initials || '') + '" placeholder="Consumer initials / ISP mo" />' +
+              '</div>'
+            );
+          })
+          .join('');
+      }
+
+      function renderPaletteModal() {
+        document.getElementById('paletteSelect').value = state.settings.paletteKey;
+        var swatches = state.settings.customSwatches;
+
+        document.getElementById('activeSwatchesPreviewRow').innerHTML = swatches
+          .map(function (hex) {
+            return (
+              '<button type="button" class="swatch-btn ' + (state.settings.activeSwatch === hex ? 'is-selected' : '') + '" data-pick-default-hex="' + escapeHtml(hex) + '" style="background:' + escapeHtml(hex) + ';width:38px;height:38px;"></button>'
+            );
+          })
+          .join('');
+
+        document.getElementById('customSwatchesEditors').innerHTML = swatches
+          .map(function (hex, idx) {
+            return (
+              '<label style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:700;cursor:pointer;">' +
+                '<input type="color" data-custom-slot="' + idx + '" value="' + escapeHtml(hex) + '" style="width:48px;height:48px;border:none;border-radius:14px;cursor:pointer;" />' +
+                '<span>Swatch ' + (idx + 1) + '</span>' +
+              '</label>'
+            );
+          })
+          .join('');
+      }
+
+      function openHouseDrawer(houseId) {
+        state.activeHouseId = houseId;
+        state.drawerCategory = 'All';
+        document.getElementById('drawerAddForm').style.display = 'none';
+        document.getElementById('drawerTemplatesBox').style.display = 'none';
+        renderHouseDrawer();
+        document.getElementById('houseDrawerModal').classList.add('is-open');
+      }
+
+      function closeHouseDrawer() {
+        state.activeHouseId = null;
+        document.getElementById('houseDrawerModal').classList.remove('is-open');
+        renderAll();
+      }
+
+      function matchHouseId(raw) {
+        var q = String(raw || '').trim().toLowerCase();
+        if (!q) return state.houses[0].id;
+        var exact = state.houses.find(function (h) { return h.name.toLowerCase() === q || h.id.toLowerCase() === q; });
+        if (exact) return exact.id;
+        var partial = state.houses.find(function (h) { return q.indexOf(h.name.toLowerCase()) !== -1 || h.name.toLowerCase().indexOf(q) !== -1; });
+        return partial ? partial.id : state.houses[0].id;
+      }
+
+      function normalizeCategory(raw) {
+        var s = String(raw || '').toLowerCase();
+        if (s.indexOf('inspect') !== -1 || s.indexOf('drill') !== -1 || s.indexOf('oversight') !== -1) return 'Inspections';
+        if (s.indexOf('meet') !== -1 || s.indexOf('isp') !== -1) return 'Meetings';
+        if (s.indexOf('appt') !== -1 || s.indexOf('appoint') !== -1 || s.indexOf('med') !== -1 || s.indexOf('dental') !== -1) return 'Appointments';
+        return 'Paperwork / Deadlines';
+      }
+
+      function parseAndLoadChatGptText(text) {
+        var clean = String(text || '').trim().replace(/^```[a-zA-Z]*\n?/, '').replace(/```$/, '').trim();
+        if (!clean) {
+          showToast('Paste ChatGPT’s reply into the box first.', true);
+          return;
+        }
+        var added = [];
+
+        if (clean.charAt(0) === '[' || clean.charAt(0) === '{') {
+          try {
+            var obj = JSON.parse(clean);
+            var arr = Array.isArray(obj) ? obj : obj.items || [];
+            arr.forEach(function (r, idx) {
+              var title = String(r.title || r.task || '').trim();
+              if (!title) return;
+              added.push({
+                id: 'cg-' + Date.now() + '-' + idx,
+                houseId: matchHouseId(r.house || r.houseId || r.location),
+                title: title,
+                category: normalizeCategory(r.category),
+                date: String(r.date || r.due_date || isoDateOffset(0)).slice(0, 10),
+                startTime: String(r.start_time || r.time || '').slice(0, 5),
+                recurrence: ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annually'].indexOf(r.recurrence) !== -1 ? r.recurrence : 'None',
+                notes: String(r.notes || '').trim(),
+                completed: false,
+                fillColor: state.settings.activeSwatch
+              });
+            });
+          } catch (e) {}
+        }
+
+        if (added.length === 0) {
+          var lines = clean.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+          lines.forEach(function (line, idx) {
+            if (idx === 0 && /house/i.test(line) && /title/i.test(line)) return;
+            var parts = line.split(',').map(function (p) { return p.replace(/^"|"$/g, '').trim(); });
+            if (parts.length >= 2) {
+              added.push({
+                id: 'cg-' + Date.now() + '-' + idx,
+                houseId: matchHouseId(parts[0]),
+                title: parts[1] || parts[0],
+                category: normalizeCategory(parts[2] || parts[1]),
+                date: (parts[3] || isoDateOffset(0)).slice(0, 10),
+                startTime: (parts[4] || '').slice(0, 5),
+                recurrence: ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annually'].indexOf(parts[5]) !== -1 ? parts[5] : 'None',
+                notes: parts.slice(6).join(', '),
+                completed: false,
+                fillColor: state.settings.activeSwatch
+              });
+            } else {
+              var bullet = line.replace(/^[-*•\d.)]+\s*/, '');
+              if (bullet) {
+                added.push({
+                  id: 'cg-' + Date.now() + '-' + idx,
+                  houseId: matchHouseId(bullet),
+                  title: bullet,
+                  category: normalizeCategory(bullet),
+                  date: isoDateOffset(0),
+                  startTime: '',
+                  recurrence: 'None',
+                  notes: '',
+                  completed: false,
+                  fillColor: state.settings.activeSwatch
+                });
+              }
+            }
+          });
+        }
+
+        if (added.length === 0) {
+          showToast('Could not parse items from that paste. Try copying the CSV lines from ChatGPT.', true);
+          return;
+        }
+
+        state.items = added.concat(state.items);
+        saveState();
+        document.getElementById('chatGptPasteInput').value = '';
+        document.getElementById('chatGptModal').classList.remove('is-open');
+        renderAll();
+        showToast('Loaded ' + added.length + ' ' + (added.length === 1 ? 'item' : 'items') + ' into your house bubbles!');
+      }
+
+      function renderAll() {
+        applyThemeVariables();
+        renderSummaryCounts();
+        renderPriorityStrip();
+        renderHouseBubbles();
+        if (state.activeHouseId) renderHouseDrawer();
+      }
+
+      function bindAllEvents() {
+        var splashBtn = document.getElementById('dismissSplashBtn');
+        var splashOverlay = document.getElementById('welcomeSplashOverlay');
+        if (splashBtn) {
+          splashBtn.addEventListener('touchend', function (e) {
+            e.preventDefault();
+            window.__dismissWelcomeSplash(e);
+          }, { passive: false });
+        }
+        if (splashOverlay) {
+          splashOverlay.addEventListener('touchend', function (e) {
+            if (e.target === splashOverlay) {
+              e.preventDefault();
+              window.__dismissWelcomeSplash(e);
+            }
+          }, { passive: false });
+        }
+
+        // Priority Strip Collapse Toggle
+        document.getElementById('priorityStripToggle').addEventListener('click', function () {
+          state.stripCollapsed = !state.stripCollapsed;
+          renderPriorityStrip();
+        });
+
+        // Region Filter Pills
+        document.getElementById('regionFilterPills').addEventListener('click', function (e) {
+          var btn = e.target.closest('button[data-region]');
+          if (!btn) return;
+          state.regionFilter = btn.getAttribute('data-region');
+          document.querySelectorAll('#regionFilterPills button').forEach(function (b) {
+            b.className = b.getAttribute('data-region') === state.regionFilter ? 'btn btn-plum' : 'btn';
+          });
+          renderHouseBubbles();
+        });
+
+        // Open House Bubble
+        document.querySelector('main').addEventListener('click', function (e) {
+          var bubble = e.target.closest('button[data-open-house]');
+          if (bubble) {
+            openHouseDrawer(bubble.getAttribute('data-open-house'));
+            return;
+          }
+          var jump = e.target.closest('[data-jump-house]');
+          if (jump) {
+            openHouseDrawer(jump.getAttribute('data-jump-house'));
+            return;
+          }
+          var compBtn = e.target.closest('button[data-complete-id]');
+          if (compBtn) {
+            toggleCompleteTask(compBtn.getAttribute('data-complete-id'));
+            return;
+          }
+          var icsBtn = e.target.closest('button[data-ics-id]');
+          if (icsBtn) {
+            var it = state.items.find(function (x) { return x.id === icsBtn.getAttribute('data-ics-id'); });
+            if (it) downloadIcsForItems([it], 'reminder-' + it.id + '.ics');
+          }
+        });
+
+        // Export All Upcoming Alerts (.ics)
+        document.getElementById('exportAllIcsBtn').addEventListener('click', function () {
+          var upcoming = state.items.filter(function (i) { return !i.completed; });
+          downloadIcsForItems(upcoming, 'all-house-reminders-' + isoDateOffset(0) + '.ics');
+        });
+
+        // Toast Undo & Dismiss
+        document.getElementById('toastDismissBtn').addEventListener('click', hideToast);
+        document.getElementById('toastUndoBtn').addEventListener('click', function () {
+          if (!state.lastUndoSnapshot) return;
+          try {
+            state.items = JSON.parse(state.lastUndoSnapshot);
+            state.lastUndoSnapshot = null;
+            saveState();
+            hideToast();
+            renderAll();
+          } catch (e) {}
+        });
+
+        // House Drawer Events
+        document.getElementById('closeHouseDrawerBtn').addEventListener('click', closeHouseDrawer);
+        document.getElementById('houseDrawerModal').addEventListener('click', function (e) {
+          if (e.target.id === 'houseDrawerModal') closeHouseDrawer();
+        });
+
+        document.getElementById('drawerHouseNameInput').addEventListener('change', function (e) {
+          var h = state.houses.find(function (x) { return x.id === state.activeHouseId; });
+          var val = e.target.value.trim();
+          if (h && val) {
+            h.name = val;
+            saveState();
+            renderAll();
+          }
+        });
+
+        document.getElementById('drawerQuickAddToggleBtn').addEventListener('click', function () {
+          document.getElementById('drawerTemplatesBox').style.display = 'none';
+          var form = document.getElementById('drawerAddForm');
+          form.style.display = form.style.display === 'none' ? 'block' : 'none';
+          document.getElementById('dDate').value = isoDateOffset(0);
+        });
+        document.getElementById('drawerCancelAddBtn').addEventListener('click', function () {
+          document.getElementById('drawerAddForm').style.display = 'none';
+        });
+
+        document.getElementById('drawerAddForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var title = document.getElementById('dTitle').value.trim();
+          if (!title || !state.activeHouseId) return;
+          state.items.unshift({
+            id: 'item-' + Date.now(),
+            houseId: state.activeHouseId,
+            title: title,
+            category: document.getElementById('dCategory').value,
+            recurrence: document.getElementById('dRecurrence').value,
+            date: document.getElementById('dDate').value || isoDateOffset(0),
+            startTime: document.getElementById('dTime').value || '',
+            notes: document.getElementById('dNotes').value.trim(),
+            completed: false,
+            fillColor: state.settings.activeSwatch
+          });
+          e.target.reset();
+          e.target.style.display = 'none';
+          saveState();
+          renderAll();
+        });
+
+        document.getElementById('drawerTemplatesToggleBtn').addEventListener('click', function () {
+          document.getElementById('drawerAddForm').style.display = 'none';
+          var box = document.getElementById('drawerTemplatesBox');
+          box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        });
+        document.getElementById('closeTemplatesBoxBtn').addEventListener('click', function () {
+          document.getElementById('drawerTemplatesBox').style.display = 'none';
+        });
+
+        document.getElementById('templatesGrid').addEventListener('click', function (e) {
+          var btn = e.target.closest('button[data-tpl-index]');
+          if (!btn || !state.activeHouseId) return;
+          var tpl = CADENCE_TEMPLATES[Number(btn.getAttribute('data-tpl-index'))];
+          if (!tpl) return;
+          state.items.unshift({
+            id: 'tpl-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+            houseId: state.activeHouseId,
+            title: tpl.title,
+            category: tpl.category,
+            date: isoDateOffset(0),
+            startTime: '',
+            recurrence: tpl.recurrence,
+            notes: tpl.notes,
+            completed: false,
+            fillColor: state.settings.activeSwatch
+          });
+          saveState();
+          renderAll();
+          showToast('Added "' + tpl.title + '" (' + tpl.recurrence + ').');
+        });
+
+        document.getElementById('drawerCategoryPills').addEventListener('click', function (e) {
+          var btn = e.target.closest('button[data-dcat]');
+          if (!btn) return;
+          state.drawerCategory = btn.getAttribute('data-dcat');
+          renderHouseDrawer();
+        });
+
+        document.getElementById('drawerTasksList').addEventListener('click', function (e) {
+          var swatch = e.target.closest('button[data-recolor-id]');
+          if (swatch) {
+            var it = state.items.find(function (x) { return x.id === swatch.getAttribute('data-recolor-id'); });
+            if (it) {
+              it.fillColor = swatch.getAttribute('data-hex');
+              saveState();
+              renderHouseDrawer();
+            }
+            return;
+          }
+          var comp = e.target.closest('button[data-complete-id]');
+          if (comp) {
+            toggleCompleteTask(comp.getAttribute('data-complete-id'));
+            return;
+          }
+          var ics = e.target.closest('button[data-ics-id]');
+          if (ics) {
+            var found = state.items.find(function (x) { return x.id === ics.getAttribute('data-ics-id'); });
+            if (found) downloadIcsForItems([found], 'reminder-' + found.id + '.ics');
+            return;
+          }
+          var del = e.target.closest('button[data-delete-id]');
+          if (del) {
+            state.lastUndoSnapshot = JSON.stringify(state.items);
+            state.items = state.items.filter(function (x) { return x.id !== del.getAttribute('data-delete-id'); });
+            saveState();
+            renderAll();
+            showToast('Item removed.', false, true);
+          }
+        });
+
+        // Floating Quick-Add (+) FAB Modal
+        document.getElementById('fabQuickAddBtn').addEventListener('click', function () {
+          var sel = document.getElementById('fabHouseSelect');
+          sel.innerHTML = state.houses
+            .map(function (h) {
+              return '<option value="' + escapeHtml(h.id) + '">' + escapeHtml(h.name + ' (' + h.region + ')') + '</option>';
+            })
+            .join('');
+          document.getElementById('fabDateInput').value = isoDateOffset(0);
+          document.getElementById('fabModal').classList.add('is-open');
+          document.getElementById('fabTitleInput').focus();
+        });
+        document.getElementById('closeFabModalBtn').addEventListener('click', function () {
+          document.getElementById('fabModal').classList.remove('is-open');
+        });
+        document.getElementById('fabModal').addEventListener('click', function (e) {
+          if (e.target.id === 'fabModal') document.getElementById('fabModal').classList.remove('is-open');
+        });
+        document.getElementById('fabQuickForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var title = document.getElementById('fabTitleInput').value.trim();
+          if (!title) return;
+          var houseId = document.getElementById('fabHouseSelect').value;
+          var house = state.houses.find(function (h) { return h.id === houseId; });
+          state.items.unshift({
+            id: 'fab-' + Date.now(),
+            houseId: houseId,
+            title: title,
+            category: document.getElementById('fabCategorySelect').value,
+            recurrence: document.getElementById('fabRecurrenceSelect').value,
+            date: document.getElementById('fabDateInput').value || isoDateOffset(0),
+            startTime: document.getElementById('fabTimeInput').value || '',
+            notes: '',
+            completed: false,
+            fillColor: state.settings.activeSwatch
+          });
+          e.target.reset();
+          document.getElementById('fabModal').classList.remove('is-open');
+          saveState();
+          renderAll();
+          showToast('Added to ' + (house ? house.name : 'house') + '!');
+        });
+
+        // Quick Paste from ChatGPT Modal
+        document.getElementById('openChatGptModalBtn').addEventListener('click', function () {
+          document.getElementById('chatGptModal').classList.add('is-open');
+        });
+        document.getElementById('closeChatGptModalBtn').addEventListener('click', function () {
+          document.getElementById('chatGptModal').classList.remove('is-open');
+        });
+        document.getElementById('chatGptModal').addEventListener('click', function (e) {
+          if (e.target.id === 'chatGptModal') document.getElementById('chatGptModal').classList.remove('is-open');
+        });
+
+        document.getElementById('copyPromptBtn').addEventListener('click', function () {
+          var prompt =
+            'Extract all appointments, meetings, inspections, and due dates from this Outlook screenshot into CSV lines with columns: House,Title,Category,Date(YYYY-MM-DD),StartTime(HH:MM),Recurrence(None/Daily/Weekly/Monthly/Quarterly/Annually),Notes. Match house names to Lehigh 1-7 or Kutztown 1-5 when mentioned.';
+          var ta = document.createElement('textarea');
+          ta.value = prompt;
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand('copy');
+            showToast('ChatGPT screenshot prompt copied! Upload your Outlook screenshot in ChatGPT and paste the reply.');
+          } catch (e) {
+            showToast('Prompt ready—upload your screenshot into ChatGPT.');
+          }
+          document.body.removeChild(ta);
+        });
+
+        document.getElementById('loadChatGptBtn').addEventListener('click', function () {
+          parseAndLoadChatGptText(document.getElementById('chatGptPasteInput').value);
+        });
+
+        // House Roster & Names Modal
+        document.getElementById('openRosterModalBtn').addEventListener('click', function () {
+          renderRosterModal();
+          document.getElementById('rosterModal').classList.add('is-open');
+        });
+        document.getElementById('closeRosterModalBtn').addEventListener('click', function () {
+          document.getElementById('rosterModal').classList.remove('is-open');
+          saveState();
+          renderAll();
+        });
+        document.getElementById('rosterModal').addEventListener('click', function (e) {
+          if (e.target.id === 'rosterModal') {
+            document.getElementById('rosterModal').classList.remove('is-open');
+            saveState();
+            renderAll();
+          }
+        });
+        document.getElementById('rosterListContainer').addEventListener('input', function (e) {
+          var nameId = e.target.getAttribute('data-roster-name');
+          if (nameId) {
+            var h1 = state.houses.find(function (x) { return x.id === nameId; });
+            if (h1 && e.target.value.trim()) h1.name = e.target.value.trim();
+          }
+          var countId = e.target.getAttribute('data-roster-count');
+          if (countId) {
+            var h2 = state.houses.find(function (x) { return x.id === countId; });
+            if (h2) h2.consumers = Math.max(0, Math.min(24, Number(e.target.value) || 0));
+            var total = state.houses.reduce(function (s, h) { return s + (Number(h.consumers) || 0); }, 0);
+            document.getElementById('rosterLiveTotalText').textContent = 'Total Consumers: ' + total + ' / 24 across 12 Houses';
+          }
+          var initId = e.target.getAttribute('data-roster-initials');
+          if (initId) {
+            var h3 = state.houses.find(function (x) { return x.id === initId; });
+            if (h3) h3.initials = e.target.value;
+          }
+        });
+
+        // Seasonal & Custom Swatches Modal
+        document.getElementById('openPaletteModalBtn').addEventListener('click', function () {
+          renderPaletteModal();
+          document.getElementById('paletteModal').classList.add('is-open');
+        });
+        document.getElementById('closePaletteModalBtn').addEventListener('click', function () {
+          document.getElementById('paletteModal').classList.remove('is-open');
+        });
+        document.getElementById('paletteModal').addEventListener('click', function (e) {
+          if (e.target.id === 'paletteModal') document.getElementById('paletteModal').classList.remove('is-open');
+        });
+        document.getElementById('paletteSelect').addEventListener('change', function (e) {
+          state.settings.paletteKey = e.target.value;
+          saveState();
+          applyThemeVariables();
+        });
+        document.getElementById('activeSwatchesPreviewRow').addEventListener('click', function (e) {
+          var btn = e.target.closest('button[data-pick-default-hex]');
+          if (!btn) return;
+          state.settings.activeSwatch = btn.getAttribute('data-pick-default-hex');
+          saveState();
+          applyThemeVariables();
+          renderPaletteModal();
+        });
+        document.getElementById('customSwatchesEditors').addEventListener('change', function (e) {
+          var slot = e.target.getAttribute('data-custom-slot');
+          if (slot == null) return;
+          state.settings.customSwatches[Number(slot)] = e.target.value;
+          state.settings.activeSwatch = e.target.value;
+          saveState();
+          applyThemeVariables();
+          renderPaletteModal();
+          if (state.activeHouseId) renderHouseDrawer();
+        });
+
+        // Clear Demo Data
+        document.getElementById('clearDemoBtn').addEventListener('click', function () {
+          state.lastUndoSnapshot = JSON.stringify(state.items);
+          state.items = state.items.filter(function (i) { return String(i.id).indexOf('demo-') !== 0; });
+          saveState();
+          renderAll();
+          showToast('Demo items cleared! Your 12 house bubbles are ready.', false, true);
+        });
+      }
+
+      function init() {
+        var loaded = loadState();
+        state.houses = loaded.houses;
+        state.items = loaded.items;
+        state.settings = loaded.settings;
+        renderTemplatesGrid();
+        bindAllEvents();
+        renderAll();
+        window.__showWelcomeSplash();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
